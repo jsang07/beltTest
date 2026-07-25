@@ -1,0 +1,430 @@
+/* 기본 글로벌 스타일 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+
+body {
+  background-color: #090d16;
+  background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+  color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  overflow: hidden; /* 스크롤바 완전 방지 */
+  user-select: none;
+}
+
+.screen-container {
+  display: none;
+  width: 100%;
+  max-width: 840px;
+  z-index: 2;
+}
+
+.screen-container.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------------- 1. 대형 테이블 입력 화면 ---------------- */
+.input-card {
+  background: #111827;
+  border: 2px solid #374151;
+  border-radius: 20px;
+  padding: 32px 28px;
+  width: 100%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.85);
+}
+
+.title-box {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.title-box h1 {
+  font-size: 1.65rem;
+  color: #fbbf24;
+  margin-bottom: 8px;
+}
+
+.title-box p {
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  max-height: 520px;
+  overflow-y: auto;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  background-color: #090d16;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+.candidate-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.92rem;
+}
+
+.candidate-table th {
+  position: sticky;
+  top: 0;
+  background-color: #1f2937;
+  color: #fbbf24;
+  padding: 14px 12px;
+  font-size: 0.85rem;
+  border-bottom: 2px solid #374151;
+  z-index: 5;
+}
+
+.candidate-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #1f2937;
+  vertical-align: middle;
+}
+
+.table-input, .table-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #4b5563;
+  background-color: #111827;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.table-input:focus, .table-select:focus {
+  border-color: #fbbf24;
+}
+
+.btn-toggle {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  width: 80px;
+  transition: transform 0.1s;
+}
+
+.btn-toggle:active {
+  transform: scale(0.95);
+}
+
+.btn-toggle.pass { background-color: #15803d; color: #4ade80; }
+.btn-toggle.fail { background-color: #991b1b; color: #f87171; }
+
+.btn-del {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 1.25rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.btn-del:hover { color: #f87171; }
+
+.btn-group {
+  display: flex;
+  gap: 14px;
+}
+
+.btn {
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, background-color 0.2s;
+}
+
+.btn-add {
+  flex: 1;
+  background-color: #1f2937;
+  color: #fbbf24;
+  border: 1px dashed #f59e0b;
+}
+
+.btn-add:hover { background-color: #374151; }
+
+.btn-gold {
+  flex: 2;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+.btn-gold:hover { transform: translateY(-2px); }
+
+/* ---------------- 2. 빔 프로젝터용 초대형 카운트다운 연출 ---------------- */
+.countdown-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(3, 7, 18, 0.96);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.countdown-info {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 32px;
+  background: rgba(31, 41, 55, 0.95);
+  padding: 16px 48px;
+  border-radius: 50px;
+  border: 2px solid #f59e0b;
+  box-shadow: 0 0 35px rgba(245, 158, 11, 0.5);
+}
+
+.countdown-info .highlight { color: #fbbf24; }
+
+.countdown-number {
+  font-size: 14rem;
+  font-weight: 900;
+  color: #fbbf24;
+  text-shadow: 0 0 60px rgba(251, 191, 36, 0.9);
+  animation: pulseZoom 0.8s ease-in-out infinite;
+}
+
+.countdown-text {
+  font-size: 1.8rem;
+  color: #cbd5e1;
+  margin-top: 20px;
+  font-weight: 700;
+}
+
+@keyframes pulseZoom {
+  0% { transform: scale(0.6); opacity: 0.3; }
+  50% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(0.85); opacity: 0.8; }
+}
+
+/* ---------------- 3. 대형 프로젝터 결과 카드 모드 ---------------- */
+.progress-badge {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  padding: 8px 24px;
+  border-radius: 30px;
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  margin-bottom: 20px;
+}
+
+.progress-badge span { color: #fbbf24; font-weight: bold; }
+
+/* 빔 프로젝터 대형 카드 */
+.fifa-card {
+  width: 580px;
+  min-height: 680px;
+  background: #111827;
+  border-radius: 32px;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.95);
+  border: 6px solid #f59e0b;
+  margin-bottom: 0; /* 우측 하단 컨트롤 배치로 마진 삭제 */
+  overflow: hidden;
+}
+
+.fifa-card.pass {
+  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
+  border-color: #fbbf24;
+  box-shadow: 0 0 65px rgba(251, 191, 36, 0.75);
+}
+
+.fifa-card.fail {
+  background: linear-gradient(180deg, #18181b 0%, #09090b 100%);
+  border-color: #ef4444;
+  box-shadow: 0 0 50px rgba(239, 68, 68, 0.6);
+}
+
+.card-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.emblem { 
+  font-size: 1.1rem;
+  font-weight: 900; 
+  color: #fbbf24; 
+  letter-spacing: 2px; 
+}
+
+.status-badge {
+  font-size: 1.1rem;
+  font-weight: 900;
+  padding: 6px 18px;
+  border-radius: 16px;
+}
+
+.pass .status-badge { background-color: #fbbf24; color: #000; }
+.fail .status-badge { background-color: #ef4444; color: #fff; }
+
+.hero-result-title {
+  font-size: 3.6rem;
+  font-weight: 900;
+  text-align: center;
+  margin: 16px 0 8px 0;
+  letter-spacing: -1px;
+  line-height: 1.2;
+  white-space: nowrap;
+  word-break: keep-all;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.pass .hero-result-title {
+  color: #fef08a;
+  text-shadow: 0 0 20px rgba(250, 204, 21, 0.9), 0 0 40px rgba(245, 158, 11, 0.6);
+}
+
+.fail .hero-result-title {
+  color: #f87171;
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  80% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.card-avatar {
+  font-size: 7.5rem;
+  margin: 6px 0;
+  filter: drop-shadow(0 15px 15px rgba(0,0,0,0.6));
+}
+
+.card-body { width: 100%; text-align: center; }
+
+.player-name {
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 18px;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+}
+
+.stat-box {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 16px 20px;
+}
+
+.stat-item { display: flex; flex-direction: column; }
+.stat-label { font-size: 1.1rem; color: #9ca3af; margin-bottom: 2px; }
+.stat-value { font-size: 2.0rem; font-weight: 900; color: #fbbf24; }
+.stat-arrow { color: #f59e0b; font-weight: bold; font-size: 2.2rem; }
+
+.result-banner {
+  width: 100%;
+  padding: 18px 12px;
+  border-radius: 16px;
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.pass .result-banner {
+  background: linear-gradient(135deg, #f59e0b, #eab308);
+  color: #000;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+}
+
+.fail .result-banner {
+  background-color: #3f3f46;
+  color: #e4e4e7;
+}
+
+/* 🌟 [수정] 컨트롤 버튼을 우측 하단 구석에 완벽 고정 🌟 */
+.result-controls { 
+  position: fixed;
+  bottom: 24px;
+  right: 28px;
+  text-align: right; 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  z-index: 20;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.result-controls:hover {
+  opacity: 1;
+}
+
+.result-controls .btn-gold {
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+.key-guide { 
+  font-size: 0.75rem; 
+  color: #9ca3af; 
+  margin-top: 8px; 
+}
+
+kbd { 
+  background-color: #1f2937; 
+  padding: 2px 6px; 
+  border-radius: 4px; 
+  color: #fbbf24; 
+  border: 1px solid #374151;
+}
+
+/* 불꽃놀이 Canvas */
+#fireworksCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+}

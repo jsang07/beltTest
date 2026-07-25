@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>국기원 태권도 승품·단 심사 발표</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 배경 축하 불꽃놀이 캔버스 -->
+  <canvas id="fireworksCanvas"></canvas>
+
+  <!-- 1. 명단 입력 화면 -->
+  <div id="inputScreen" class="screen-container active">
+    <div class="input-card">
+      <div class="title-box">
+        <h1>🥋 태권도 승품·단 심사 명단 작성</h1>
+        <p>수련생 이름을 입력하세요. 이름을 작성한 수련생만 자동으로 발표 명단에 포함됩니다.</p>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="candidate-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">이름</th>
+              <th style="width: 25%;">이전 품·단·급</th>
+              <th style="width: 25%;">목표 품·단·급</th>
+              <th style="width: 15%; text-align: center;">합격 여부</th>
+              <th style="width: 10%; text-align: center;">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="candidateTableBody">
+            <!-- 동적 행 생성 -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-add" onclick="addRow()">+ 응시자 줄 추가</button>
+        <button class="btn btn-gold" onclick="startPresentation()">🔥 심사 발표 시작하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 3-2-1 카운트다운 연출 오버레이 -->
+  <div id="countdownOverlay" class="countdown-overlay hidden">
+    <div id="countdownInfo" class="countdown-info"></div>
+    <div id="countdownNumber" class="countdown-number">3</div>
+    <div class="countdown-text">심사 결과를 공개합니다!</div>
+  </div>
+
+  <!-- 3. 피파 강화 결과 카드 화면 -->
+  <div id="resultScreen" class="screen-container hidden">
+    
+    <div class="progress-badge">
+      수련생 <span id="currentIndex">1</span> / <span id="totalCount">1</span>
+    </div>
+
+    <!-- 대형 강화 카드 -->
+    <div id="fifaCard" class="fifa-card">
+      <div class="card-header">
+        <span class="emblem">KUKKIWON</span>
+        <span id="cardStatusBadge" class="status-badge">PASSED</span>
+      </div>
+
+      <div id="heroResultTitle" class="hero-result-title">
+        🎉 승급 합격! 🎉
+      </div>
+
+      <div class="card-avatar">🥋</div>
+
+      <div class="card-body">
+        <div id="cardName" class="player-name">홍길동</div>
+
+        <div class="stat-box">
+          <div class="stat-item">
+            <span class="stat-label">이전 자격</span>
+            <span id="cardPrev" class="stat-value">1품</span>
+          </div>
+          <span class="stat-arrow">➔</span>
+          <div class="stat-item">
+            <span class="stat-label">목표 자격</span>
+            <span id="cardNext" class="stat-value">2품</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultBadge" class="result-banner">🔥 2품 승급을 축하합니다! 🔥</div>
+    </div>
+
+    <!-- [우측 하단 고정] 컨트롤 안내 -->
+    <div class="result-controls">
+      <button id="nextBtn" class="btn btn-gold" onclick="nextCandidateProcess()">다음 응시자 (Space / Enter) ➔</button>
+      <p class="key-guide">키보드 <kbd>Enter</kbd> 또는 <kbd>Space</kbd> 키를 눌러 진행</p>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
