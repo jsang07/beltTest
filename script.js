@@ -1,9 +1,11 @@
-// --- 1. 국기원 표준 품/단 옵션 배열 ---
+// --- 1. 품/단 옵션 ---
 const RANKS = [
   "무급", "9급", "8급", "7급", "6급", "5급", "4급", "3급", "2급", "1급",
   "1품", "2품", "3품", "4품",
   "1단", "2단", "3단", "4단", "5단", "6단", "7단", "8단", "9단"
 ];
+
+const COUNTDOWN_INTERVAL = 1250; // 1.35초 간격
 
 let candidates = Array.from({ length: 10 }, () => ({
   name: "",
@@ -15,14 +17,13 @@ let candidates = Array.from({ length: 10 }, () => ({
 let activeCandidates = [];
 let currentIndex = 0;
 
-// --- 2. 테이블 랜더링 ---
+// --- 2. 명단 입력 테이블 ---
 function renderCandidateTable() {
   const tbody = document.getElementById('candidateTableBody');
   tbody.innerHTML = '';
 
   candidates.forEach((c, idx) => {
     const tr = document.createElement('tr');
-    
     tr.innerHTML = `
       <td>
         <input type="text" value="${c.name}" class="table-input" placeholder="수련생 이름"
@@ -54,7 +55,6 @@ function renderCandidateTable() {
 function addRow() {
   candidates.push({ name: "", prev: "1품", next: "2품", isPass: true });
   renderCandidateTable();
-  
   const wrapper = document.querySelector('.table-wrapper');
   wrapper.scrollTop = wrapper.scrollHeight;
 }
@@ -79,7 +79,7 @@ function togglePass(idx) {
 
 renderCandidateTable();
 
-// --- 3. 발표 및 카운트다운 ---
+// --- 3. 발표 시작 시퀀스 ---
 function startPresentation() {
   activeCandidates = candidates.filter(c => c.name.trim() !== "");
 
@@ -92,19 +92,27 @@ function startPresentation() {
   document.getElementById('inputScreen').classList.remove('active');
   document.getElementById('inputScreen').classList.add('hidden');
   
-  runCountdown(activeCandidates[currentIndex], () => {
-    document.getElementById('resultScreen').classList.remove('hidden');
-    document.getElementById('resultScreen').classList.add('active');
-    showCard(currentIndex);
+  processCandidateFlow(activeCandidates[currentIndex]);
+}
+
+function processCandidateFlow(student) {
+  runIntro(student, () => {
+    runMainCountdown(student, () => {
+      document.getElementById('resultScreen').classList.remove('hidden');
+      document.getElementById('resultScreen').classList.add('active');
+      showCard(currentIndex);
+    });
   });
 }
 
-function runCountdown(student, onComplete) {
-  const overlay = document.getElementById('countdownOverlay');
-  const numberEl = document.getElementById('countdownNumber');
-  const infoEl = document.getElementById('countdownInfo');
+// 1단계 수련생 소개 (3, 2, 1)
+function runIntro(student, onComplete) {
+  const overlay = document.getElementById('introOverlay');
+  const numberEl = document.getElementById('introNumber');
+  
+  document.getElementById('introNameVal').innerText = student.name;
+  document.getElementById('introRankVal').innerText = student.next;
 
-  infoEl.innerHTML = `<span class="highlight">${student.name}</span> (${student.prev} ➔ ${student.next})`;
   overlay.classList.remove('hidden');
 
   let count = 3;
@@ -119,46 +127,58 @@ function runCountdown(student, onComplete) {
       overlay.classList.add('hidden');
       onComplete();
     }
-  }, 800);
+  }, COUNTDOWN_INTERVAL);
 }
 
+// 2단계 메인 카운트다운 (5, 4, 3, 2, 1)
+function runMainCountdown(student, onComplete) {
+  const overlay = document.getElementById('countdownOverlay');
+  const numberEl = document.getElementById('countdownNumber');
+  
+  document.getElementById('cdName').innerText = student.name;
+  document.getElementById('cdRank').innerText = student.next;
+
+  overlay.classList.remove('hidden');
+
+  let count = 5;
+  numberEl.innerText = count;
+
+  const timer = setInterval(() => {
+    count--;
+    if (count > 0) {
+      numberEl.innerText = count;
+    } else {
+      clearInterval(timer);
+      overlay.classList.add('hidden');
+      onComplete();
+    }
+  }, COUNTDOWN_INTERVAL);
+}
+
+// 3단계 결과 카드
 function showCard(index) {
   const student = activeCandidates[index];
-  const cardEl = document.getElementById('fifaCard');
-  const statusBadge = document.getElementById('cardStatusBadge');
-  const heroTitle = document.getElementById('heroResultTitle');
-  const badgeBanner = document.getElementById('resultBadge');
+  const topTitle = document.getElementById('resultTopTitle');
+  const cardName = document.getElementById('cardName');
+  const cardBadge = document.getElementById('cardBadge');
   const nextBtn = document.getElementById('nextBtn');
 
-  document.getElementById('currentIndex').innerText = index + 1;
-  document.getElementById('totalCount').innerText = activeCandidates.length;
-
-  document.getElementById('cardName').innerText = `${student.name} 수련생`;
-  document.getElementById('cardPrev').innerText = student.prev;
-  document.getElementById('cardNext').innerText = student.next;
-
-  heroTitle.style.animation = 'none';
-  heroTitle.offsetHeight;
-  heroTitle.style.animation = null;
+  cardName.innerText = student.name;
 
   if (student.isPass) {
-    cardEl.className = 'fifa-card pass';
-    statusBadge.innerText = 'PASSED';
-    heroTitle.innerText = `🎉 ${student.next} 승급 합격! 🎉`;
-    badgeBanner.innerText = `🔥 축하합니다! 멋진 태권도인! 🔥`;
-    startFireworks(); // 초대형 불꽃놀이 팡파르!
+    topTitle.innerText = "🎉 합격 🎉";
+    cardBadge.innerText = `${student.next} 승품을 축하합니다`;
+    startFireworks();
   } else {
-    cardEl.className = 'fifa-card fail';
-    statusBadge.innerText = 'FAILED';
-    heroTitle.innerText = `💪 아쉬운 도전!`;
-    badgeBanner.innerText = `다음 심사에 다시 도전해요!`;
+    topTitle.innerText = "❌ 아쉬운 결과 ❌";
+    cardBadge.innerText = "다음 기회에 꼭 승품해요!";
     stopFireworks();
   }
 
   if (index === activeCandidates.length - 1) {
     nextBtn.innerText = '🔄 처음으로 돌아가기';
   } else {
-    nextBtn.innerText = '다음 응시자 (Space / Enter) ➔';
+    nextBtn.innerText = '잠시 후 다음 순서가 진행됩니다.';
   }
 }
 
@@ -170,11 +190,7 @@ function nextCandidateProcess() {
     document.getElementById('resultScreen').classList.remove('active');
     document.getElementById('resultScreen').classList.add('hidden');
 
-    runCountdown(activeCandidates[currentIndex], () => {
-      document.getElementById('resultScreen').classList.remove('hidden');
-      document.getElementById('resultScreen').classList.add('active');
-      showCard(currentIndex);
-    });
+    processCandidateFlow(activeCandidates[currentIndex]);
   } else {
     stopFireworks();
 
@@ -185,11 +201,15 @@ function nextCandidateProcess() {
   }
 }
 
+// 키보드 엔터/스페이스 이벤트
 window.addEventListener('keydown', (e) => {
   const resultScreen = document.getElementById('resultScreen');
-  const overlay = document.getElementById('countdownOverlay');
+  const introOverlay = document.getElementById('introOverlay');
+  const cdOverlay = document.getElementById('countdownOverlay');
 
-  if (resultScreen.classList.contains('active') && overlay.classList.contains('hidden')) {
+  if (resultScreen.classList.contains('active') && 
+      introOverlay.classList.contains('hidden') && 
+      cdOverlay.classList.contains('hidden')) {
     if (e.code === 'Enter' || e.code === 'Space') {
       e.preventDefault();
       nextCandidateProcess();
@@ -197,7 +217,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// --- 4. 🎆 [재설계] 대형 축하 불꽃놀이 (High Quality Grand Fireworks) ---
+// --- 4. 불꽃놀이 (Canvas) ---
 const canvas = document.getElementById('fireworksCanvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -210,25 +230,21 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// 커진 입자 클래스 (빛나는 잔상 및 글로우 포함)
 class BigParticle {
   constructor(x, y, color) {
     this.x = x;
     this.y = y;
     this.color = color;
-    this.radius = Math.random() * 4 + 3.5; // 입자 크기를 3.5px ~ 7.5px로 대폭 확장
-    
-    // 폭발 시 강력하게 사방으로 뿜어져 나가는 속도 부여
+    this.radius = Math.random() * 4 + 3;
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 16 + 4; // 확 퍼지는 강력한 폭발력
+    const speed = Math.random() * 15 + 4;
     this.velocity = {
       x: Math.cos(angle) * speed,
       y: Math.sin(angle) * speed
     };
-    
     this.alpha = 1;
-    this.friction = 0.94; // 천천히 퍼짐
-    this.gravity = 0.15;  // 자연스러운 중력
+    this.friction = 0.94;
+    this.gravity = 0.15;
   }
 
   draw() {
@@ -237,7 +253,7 @@ class BigParticle {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = this.color;
-    ctx.shadowBlur = 12; // 빛나는 시각 효과
+    ctx.shadowBlur = 10;
     ctx.shadowColor = this.color;
     ctx.fill();
     ctx.restore();
@@ -249,35 +265,30 @@ class BigParticle {
     this.velocity.y += this.gravity;
     this.x += this.velocity.x;
     this.y += this.velocity.y;
-    this.alpha -= 0.012; // 은은하고 길게 남는 불꽃 잔상
+    this.alpha -= 0.012;
   }
 }
 
-// 팡!! 터지는 불꽃 폭발 생성기 (120개 입자 사방 분사)
 function createGrandFirework(customX, customY) {
   const x = customX || Math.random() * canvas.width;
   const y = customY || Math.random() * (canvas.height * 0.55);
-  
-  // 골드, 에메랄드, 시안, 루비, 퍼플 등 고화질 컬러
   const colorSets = [
-    ['#fbbf24', '#f59e0b', '#fef08a', '#ffffff'], // 골드 팡파르
-    ['#38bdf8', '#818cf8', '#c084fc', '#ffffff'], // 네온 블루
-    ['#4ade80', '#facc15', '#f43f5e', '#ffffff']  // 카니발 레인보우
+    ['#fbbf24', '#f59e0b', '#fef08a', '#ffffff'],
+    ['#f43f5e', '#fb7185', '#fda4af', '#ffffff'],
+    ['#38bdf8', '#818cf8', '#ffffff']
   ];
   const selectedSet = colorSets[Math.floor(Math.random() * colorSets.length)];
 
-  for (let i = 0; i < 120; i++) { // 입자 개수 120개로 대폭 증가
+  for (let i = 0; i < 100; i++) {
     const color = selectedSet[Math.floor(Math.random() * selectedSet.length)];
     particles.push(new BigParticle(x, y, color));
   }
 }
 
 function animateFireworks() {
-  // 어두운 배경 잔상으로 깔끔한 불꽃 궤적 유지
-  ctx.fillStyle = 'rgba(9, 13, 22, 0.2)';
+  ctx.fillStyle = 'rgba(13, 18, 29, 0.2)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 주기적으로 사방에서 대형 폭죽 팡팡 터짐
   if (Math.random() < 0.18) {
     createGrandFirework();
   }
@@ -297,14 +308,9 @@ function animateFireworks() {
 function startFireworks() {
   if (!animationId) {
     particles = [];
-    
-    // 시작과 동시에 좌/우/중앙 5곳에서 오프닝 대형 폭죽 동시 발사!
     setTimeout(() => createGrandFirework(canvas.width * 0.2, canvas.height * 0.3), 0);
     setTimeout(() => createGrandFirework(canvas.width * 0.8, canvas.height * 0.3), 100);
-    setTimeout(() => createGrandFirework(canvas.width * 0.5, canvas.height * 0.2), 250);
-    setTimeout(() => createGrandFirework(canvas.width * 0.35, canvas.height * 0.4), 400);
-    setTimeout(() => createGrandFirework(canvas.width * 0.65, canvas.height * 0.4), 450);
-
+    setTimeout(() => createGrandFirework(canvas.width * 0.5, canvas.height * 0.2), 200);
     animateFireworks();
   }
 }

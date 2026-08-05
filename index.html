@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>국기원 태권도 승품·단 심사 발표</title>
+  <title>광남태권도 승품·단 심사 발표</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,7 +15,7 @@
   <div id="inputScreen" class="screen-container active">
     <div class="input-card">
       <div class="title-box">
-        <h1>🥋 태권도 승품·단 심사 명단 작성</h1>
+        <h1>🥋 광남태권도 승품·단 심사 명단 작성</h1>
         <p>수련생 이름을 입력하세요. 이름을 작성한 수련생만 자동으로 발표 명단에 포함됩니다.</p>
       </div>
 
@@ -43,58 +43,51 @@
     </div>
   </div>
 
-  <!-- 2. 3-2-1 카운트다운 연출 오버레이 -->
-  <div id="countdownOverlay" class="countdown-overlay hidden">
-    <div id="countdownInfo" class="countdown-info"></div>
-    <div id="countdownNumber" class="countdown-number">3</div>
-    <div class="countdown-text">심사 결과를 공개합니다!</div>
+  <!-- 2. 1단계 수련생 소개 오버레이 (초대형 키움) -->
+  <div id="introOverlay" class="countdown-overlay hidden">
+    <div class="intro-header">다음 발표 수련생</div>
+    
+    <div class="intro-row">
+      <span class="intro-label">이름 :</span>
+      <span id="introNameVal" class="intro-value white">홍길동</span>
+    </div>
+
+    <br>
+
+    <div class="intro-row">
+      <span class="intro-label gold">품단 :</span>
+      <span id="introRankVal" class="intro-value gold">2품</span>
+    </div>
+
+    <div class="intro-sub">잠시후 발표가 시작됩니다</div>
+    <div class="intro-circle">
+      <span id="introNumber">3</span>
+    </div>
   </div>
 
-  <!-- 3. 피파 강화 결과 카드 화면 -->
+  <!-- 3. 2단계 메인 카운트다운 오버레이 (5, 4, 3, 2, 1 초대형) -->
+  <div id="countdownOverlay" class="countdown-overlay hidden">
+    <div class="gym-title">광남태권도</div>
+    <div id="cdName" class="cd-name">최연우</div>
+    <div id="cdRank" class="cd-rank">2품</div>
+    <div class="cd-circle">
+      <span id="countdownNumber">5</span>
+    </div>
+  </div>
+
+  <!-- 4. 결과 발표 화면 -->
   <div id="resultScreen" class="screen-container hidden">
-    
-    <div class="progress-badge">
-      수련생 <span id="currentIndex">1</span> / <span id="totalCount">1</span>
+    <div class="gym-title">광남태권도</div>
+    <div id="resultTopTitle" class="result-top-title">🎉 합격 🎉</div>
+
+    <div id="resultCard" class="white-card">
+      <div id="cardName" class="card-name">안경록</div>
+      <div id="cardBadge" class="card-badge">1품 승품을 축하합니다</div>
     </div>
 
-    <!-- 대형 강화 카드 -->
-    <div id="fifaCard" class="fifa-card">
-      <div class="card-header">
-        <span class="emblem">KUKKIWON</span>
-        <span id="cardStatusBadge" class="status-badge">PASSED</span>
-      </div>
-
-      <div id="heroResultTitle" class="hero-result-title">
-        🎉 승급 합격! 🎉
-      </div>
-
-      <div class="card-avatar">🥋</div>
-
-      <div class="card-body">
-        <div id="cardName" class="player-name">홍길동</div>
-
-        <div class="stat-box">
-          <div class="stat-item">
-            <span class="stat-label">이전 자격</span>
-            <span id="cardPrev" class="stat-value">1품</span>
-          </div>
-          <span class="stat-arrow">➔</span>
-          <div class="stat-item">
-            <span class="stat-label">목표 자격</span>
-            <span id="cardNext" class="stat-value">2품</span>
-          </div>
-        </div>
-      </div>
-
-      <div id="resultBadge" class="result-banner">🔥 2품 승급을 축하합니다! 🔥</div>
-    </div>
-
-    <!-- [우측 하단 고정] 컨트롤 안내 -->
-    <div class="result-controls">
-      <button id="nextBtn" class="btn btn-gold" onclick="nextCandidateProcess()">다음 응시자 (Space / Enter) ➔</button>
-      <p class="key-guide">키보드 <kbd>Enter</kbd> 또는 <kbd>Space</kbd> 키를 눌러 진행</p>
-    </div>
-
+    <button id="nextBtn" class="simple-next-btn" onclick="nextCandidateProcess()">
+      잠시 후 다음 순서가 진행됩니다.
+    </button>
   </div>
 
   <script src="script.js"></script>
