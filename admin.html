@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>도장 계정 관리</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥋</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+
+  <!-- 불러오는 중 -->
+  <div id="loadingScreen" class="screen-container wide active">
+    <div class="loading-text">불러오는 중...</div>
+  </div>
+
+  <!-- 로그인 -->
+  <div id="loginScreen" class="screen-container wide hidden">
+    <div class="login-card admin-login">
+      <div class="title-box">
+        <h1>🥋 관리자 로그인</h1>
+        <p>관리자 계정으로 로그인하세요.</p>
+      </div>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="login-field">
+          <label for="loginId">아이디</label>
+          <input type="text" id="loginId" name="loginId" class="table-input"
+            autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="아이디">
+        </div>
+        <div class="login-field">
+          <label for="loginPw">비밀번호</label>
+          <div class="pw-wrap">
+            <input type="password" id="loginPw" name="loginPw" class="table-input"
+              autocomplete="current-password" placeholder="비밀번호">
+          </div>
+        </div>
+
+        <label class="remember">
+          <input type="checkbox" name="rememberId"> 아이디 저장
+        </label>
+
+        <div class="login-error"></div>
+        <button type="submit" class="btn btn-gold">로그인</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 관리자 권한 없음 -->
+  <div id="denyScreen" class="screen-container wide hidden">
+    <div class="login-card admin-login">
+      <div class="title-box">
+        <h1>관리자 권한이 없습니다</h1>
+        <p id="denyMessage">이 계정은 관리자 페이지를 사용할 수 없습니다.</p>
+      </div>
+      <div class="btn-group">
+        <a class="btn btn-add deny-link" href="./">발표 화면으로</a>
+        <button class="btn btn-gold" type="button" id="denyLogoutBtn">로그아웃</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 화면 -->
+  <div id="adminScreen" class="screen-container wide hidden">
+    <div class="input-card admin-card">
+      <div class="input-topbar">
+        <span><span id="adminDojoName"></span> 관리자</span>
+        <div class="topbar-actions">
+          <a class="btn-logout" href="./">발표 화면으로</a>
+          <button class="btn-logout" type="button" id="logoutBtn">로그아웃</button>
+        </div>
+      </div>
+
+      <div class="title-box">
+        <h1>🥋 도장 계정 관리</h1>
+        <p>도장 계정을 만들고, 이름을 고치고, 삭제할 수 있습니다.</p>
+      </div>
+
+      <h2 class="section-title">새 도장 추가</h2>
+      <form id="createForm" class="create-form" autocomplete="off">
+        <div>
+          <label for="newName">도장 이름</label>
+          <input type="text" id="newName" class="table-input" maxlength="30"
+            autocomplete="off" placeholder="예: 광남태권도">
+        </div>
+        <div>
+          <label for="newId">아이디</label>
+          <input type="text" id="newId" class="table-input" autocomplete="off"
+            autocapitalize="none" spellcheck="false" placeholder="예: gwangnam">
+        </div>
+        <div>
+          <label for="newPw">비밀번호 (6자 이상)</label>
+          <div class="pw-row">
+            <div class="pw-wrap">
+              <input type="password" id="newPw" class="table-input" autocomplete="new-password" placeholder="비밀번호">
+            </div>
+            <button type="button" class="btn-sm" id="genPwBtn">자동 생성</button>
+          </div>
+        </div>
+        <div class="create-actions">
+          <button type="submit" class="btn btn-gold" id="createBtn">도장 추가</button>
+          <span id="createError" class="login-error create-error"></span>
+        </div>
+      </form>
+
+      <div id="createResult" class="create-result hidden">
+        <div class="create-result-title">✅ 계정이 만들어졌습니다. 비밀번호는 지금만 확인할 수 있어요.</div>
+        <pre id="createResultText"></pre>
+        <button type="button" class="btn-sm" id="copyBtn">전달 문구 복사</button>
+      </div>
+
+      <h2 class="section-title">등록된 도장</h2>
+      <div class="admin-list">
+        <table class="candidate-table">
+          <thead>
+            <tr>
+              <th style="width: 30%;">도장 이름</th>
+              <th style="width: 36%;">아이디(이메일)</th>
+              <th style="width: 34%;">관리</th>
+            </tr>
+          </thead>
+          <tbody id="dojoTableBody"></tbody>
+        </table>
+        <div id="listMsg" class="list-msg hidden"></div>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, deleteUser
+} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBcVT5penlJbZKKoIVOJ4JiOMDY48zO6zg",
+  authDomain: "belttest-12c63.firebaseapp.com",
+  projectId: "belttest-12c63",
+  storageBucket: "belttest-12c63.firebasestorage.app",
+  messagingSenderId: "87764787483",
+  appId: "1:87764787483:web:d2bcac7a36cec284ca33be"
+};
+
+// auth.js와 같은 값이어야 합니다.
+const ID_DOMAIN = "dojo.app";
+const REMEMBER_KEY = "dojoLoginId";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+
+const toEmail = (id) => (id.trim().includes("@") ? id.trim() : `${id.trim()}@${ID_DOMAIN}`);
+
+// ---------- 오류 문구 ----------
+function authErrorMessage(code) {
+  let msg;
+  switch (code) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      msg = "아이디 또는 비밀번호가 올바르지 않습니다."; break;
+    case "auth/invalid-email":
+      msg = "아이디 형식이 올바르지 않습니다."; break;
+    case "auth/weak-password":
+      msg = "비밀번호는 6자 이상이어야 합니다."; break;
+    case "auth/too-many-requests":
+      msg = "시도가 너무 많습니다. 잠시 후 다시 시도해 주세요."; break;
+    case "auth/network-request-failed":
+      msg = "인터넷 연결을 확인해 주세요."; break;
+    case "auth/operation-not-allowed":
+      msg = "이메일/비밀번호 로그인이 꺼져 있습니다. Firebase 콘솔에서 켜 주세요."; break;
+    case "auth/admin-restricted-operation":
+      msg = "Firebase 콘솔에서 사용자 가입이 꺼져 있어 계정을 만들 수 없습니다. Authentication 설정에서 가입 허용을 켜 주세요."; break;
+    default:
+      msg = "처리에 실패했습니다.";
+  }
+  return `${msg} (${code})`;
+}
+
+function describeError(e) {
+  if (e && typeof e.code === "string") {
+    if (e.code.startsWith("auth/")) return authErrorMessage(e.code);
+    if (e.code === "permission-denied") {
+      return "권한이 없습니다. Firestore 규칙을 게시했는지, 내 도장 문서에 admin 필드(boolean true)가 있는지 확인하세요.";
+    }
+    return `${e.message} (${e.code})`;
+  }
+  return (e && e.message) || "알 수 없는 오류가 발생했습니다.";
+}
+
+// ---------- DOM 헬퍼 ----------
+function h(tag, props = {}, ...children) {
+  const el = document.createElement(tag);
+  Object.entries(props).forEach(([k, v]) => {
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) el.setAttribute(k, v === true ? "" : v);
+  });
+  children.flat().filter((c) => c != null && c !== false).forEach((c) => el.append(c));
+  return el;
+}
+
+const SCREENS = ["loadingScreen", "loginScreen", "denyScreen", "adminScreen"];
+function showOnly(id) {
+  SCREENS.forEach((sid) => {
+    $(sid).classList.remove("active");
+    $(sid).classList.add("hidden");
+  });
+  $(id).classList.remove("hidden");
+  $(id).classList.add("active");
+}
+
+// ---------- 비밀번호 보기(눈) 버튼 ----------
+const SVG_ATTR = 'width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+const EYE = `<svg class="eye" ${SVG_ATTR}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_OFF = `<svg class="eye-off" ${SVG_ATTR}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+document.querySelectorAll(".pw-wrap").forEach((wrap) => {
+  const input = wrap.querySelector("input");
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "pw-toggle";
+  btn.setAttribute("aria-label", "비밀번호 보기");
+  btn.innerHTML = EYE + EYE_OFF;
+  btn.addEventListener("click", () => {
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    btn.classList.toggle("shown", show);
+    btn.setAttribute("aria-label", show ? "비밀번호 숨기기" : "비밀번호 보기");
+  });
+  wrap.appendChild(btn);
+});
+
+// ---------- 로그인 폼 ----------
+const form = $("loginForm");
+const idEl = form.querySelector('[name="loginId"]');
+const pwEl = form.querySelector('[name="loginPw"]');
+const rememberEl = form.querySelector('[name="rememberId"]');
+const loginBtn = form.querySelector('button[type="submit"]');
+const loginErr = form.querySelector(".login-error");
+
+try {
+  const saved = localStorage.getItem(REMEMBER_KEY);
+  if (saved) { idEl.value = saved; rememberEl.checked = true; }
+} catch (e) { /* 무시 */ }
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = idEl.value.trim();
+  const pw = pwEl.value;
+  if (!id || !pw) { loginErr.textContent = "아이디와 비밀번호를 입력해 주세요."; return; }
+
+  loginErr.textContent = "";
+  loginBtn.disabled = true;
+  loginBtn.textContent = "로그인 중...";
+  try {
+    await signInWithEmailAndPassword(auth, toEmail(id), pw);
+    try {
+      if (rememberEl.checked) localStorage.setItem(REMEMBER_KEY, id);
+      else localStorage.removeItem(REMEMBER_KEY);
+    } catch (e2) { /* 무시 */ }
+  } catch (err) {
+    console.error("로그인 실패:", err.code, err.message);
+    loginErr.textContent = authErrorMessage(err.code);
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "로그인";
+  }
+});
+
+// ---------- 로그인 상태 / 관리자 확인 ----------
+let myUid = null;
+let dojos = [];
+let editingId = null;
+let lastResultText = "";
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    myUid = null;
+    pwEl.value = "";
+    showOnly("loginScreen");
+    return;
+  }
+  myUid = user.uid;
+
+  try {
+    const snap = await getDoc(doc(db, "dojos", user.uid));
+    const data = snap.exists() ? snap.data() : null;
+
+    if (!data || data.admin !== true) {
+      $("denyMessage").textContent = "이 계정은 관리자 페이지를 사용할 수 없습니다.";
+      showOnly("denyScreen");
+      return;
+    }
+
+    $("adminDojoName").textContent = data.name || "";
+    showOnly("adminScreen");
+    await loadDojos();
+  } catch (e) {
+    console.error(e);
+    $("denyMessage").textContent = describeError(e);
+    showOnly("denyScreen");
+  }
+});
+
+$("logoutBtn").addEventListener("click", () => signOut(auth));
+$("denyLogoutBtn").addEventListener("click", () => signOut(auth));
+
+// ---------- 목록 ----------
+async function loadDojos() {
+  const msg = $("listMsg");
+  msg.classList.add("hidden");
+  try {
+    const snap = await getDocs(collection(db, "dojos"));
+    dojos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    // 콘솔에서 직접 만든 내 문서는 이메일 정보가 없으므로 로그인 이메일로 보완
+    dojos.forEach((d) => {
+      if (!d.email && d.id === myUid && auth.currentUser) d.email = auth.currentUser.email;
+    });
+
+    dojos.sort((a, b) =>
+      (b.admin === true) - (a.admin === true) ||
+      (a.name || "").localeCompare(b.name || "", "ko")
+    );
+    render();
+  } catch (e) {
+    console.error(e);
+    dojos = [];
+    render();
+    msg.textContent = "목록을 불러오지 못했습니다. " + describeError(e);
+    msg.classList.remove("hidden");
+  }
+}
+
+function render() {
+  const tbody = $("dojoTableBody");
+  tbody.replaceChildren();
+
+  const msg = $("listMsg");
+  if (dojos.length === 0 && msg.classList.contains("hidden")) {
+    msg.textContent = "등록된 도장이 없습니다.";
+    msg.classList.remove("hidden");
+  }
+
+  dojos.forEach((d) => {
+    const editing = editingId === d.id;
+
+    const nameCell = editing
+      ? h("td", {}, h("input", {
+          type: "text", class: "table-input", id: "editNameInput", maxlength: "30", value: d.name || "",
+          onkeydown: (e) => {
+            if (e.key === "Enter") saveName(d);
+            if (e.key === "Escape") { editingId = null; render(); }
+          }
+        }))
+      : h("td", {}, d.name || "(이름 없음)", d.admin ? h("span", { class: "badge" }, "관리자") : null);
+
+    const idText = d.email || "-";
+
+    const actions = editing
+      ? [
+          h("button", { type: "button", class: "btn-sm", onclick: () => saveName(d) }, "저장"),
+          h("button", { type: "button", class: "btn-sm", onclick: () => { editingId = null; render(); } }, "취소")
+        ]
+      : [
+          h("button", { type: "button", class: "btn-sm", onclick: () => { editingId = d.id; render(); } }, "이름 수정"),
+          d.admin ? null : h("button", { type: "button", class: "btn-sm danger", onclick: () => removeDojo(d) }, "삭제")
+        ];
+
+    tbody.appendChild(h("tr", {}, nameCell, h("td", {}, idText), h("td", { class: "action-cell" }, actions)));
+  });
+
+  const input = $("editNameInput");
+  if (input) { input.focus(); input.select(); }
+}
+
+async function saveName(d) {
+  const value = $("editNameInput").value.trim();
+  if (!value) { alert("도장 이름을 입력해 주세요."); return; }
+  try {
+    await updateDoc(doc(db, "dojos", d.id), { name: value });
+    d.name = value;
+    editingId = null;
+    if (d.id === myUid) $("adminDojoName").textContent = value;
+    render();
+  } catch (e) {
+    alert(describeError(e));
+  }
+}
+
+async function removeDojo(d) {
+  const ok = confirm(
+    `"${d.name}" 도장을 삭제할까요?\n\n삭제하면 이 아이디로 로그인해도 더 이상 사용할 수 없습니다.`
+  );
+  if (!ok) return;
+  try {
+    await deleteDoc(doc(db, "dojos", d.id));
+    dojos = dojos.filter((x) => x.id !== d.id);
+    render();
+  } catch (e) {
+    alert(describeError(e));
+  }
+}
+
+// ---------- 새 도장 만들기 ----------
+// 관리자 로그인이 풀리지 않도록, 별도 Firebase 앱으로 계정을 만듭니다.
+async function createDojo(name, idRaw, pw) {
+  const email = toEmail(idRaw);
+  const secApp = initializeApp(firebaseConfig, "secondary");
+  const secAuth = getAuth(secApp);
+
+  try {
+    let user;
+    let createdNew = false;
+
+    try {
+      const cred = await createUserWithEmailAndPassword(secAuth, email, pw);
+      user = cred.user;
+      createdNew = true;
+    } catch (e) {
+      if (e.code !== "auth/email-already-in-use") throw e;
+
+      // 예전에 삭제한 도장 아이디라면: 같은 비밀번호일 때 다시 등록할 수 있게 함
+      try {
+        const cred = await signInWithEmailAndPassword(secAuth, email, pw);
+        user = cred.user;
+      } catch (e2) {
+        throw new Error(
+          "이미 사용된 아이디입니다. 삭제한 도장 아이디를 다시 쓰려면 그때의 비밀번호를 입력하고, 아니면 다른 아이디를 쓰세요."
+        );
+      }
+      const existing = await getDoc(doc(db, "dojos", user.uid));
+      if (existing.exists()) throw new Error("이미 등록된 도장 아이디입니다.");
+    }
+
+    try {
+      await setDoc(doc(db, "dojos", user.uid), {
+        name,
+        email,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      if (createdNew) { try { await deleteUser(user); } catch (e3) { /* 무시 */ } }
+      throw e;
+    }
+  } finally {
+    try { await signOut(secAuth); } catch (e) { /* 무시 */ }
+    try { await deleteApp(secApp); } catch (e) { /* 무시 */ }
+  }
+}
+
+$("createForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = $("newName").value.trim();
+  const idRaw = $("newId").value.trim();
+  const pw = $("newPw").value;
+  const errEl = $("createError");
+  const btn = $("createBtn");
+
+  errEl.textContent = "";
+  $("createResult").classList.add("hidden");
+
+  if (!name || !idRaw || !pw) { errEl.textContent = "도장 이름, 아이디, 비밀번호를 모두 입력해 주세요."; return; }
+  if (pw.length < 6) { errEl.textContent = "비밀번호는 6자 이상이어야 합니다."; return; }
+
+  btn.disabled = true;
+  btn.textContent = "만드는 중...";
+  try {
+    await createDojo(name, idRaw, pw);
+
+    const siteUrl = new URL("./", location.href).href;
+    lastResultText =
+      `[${name}] 승품·단 심사 발표 사이트\n` +
+      `주소: ${siteUrl}\n` +
+      `아이디: ${toEmail(idRaw)}\n` +
+      `비밀번호: ${pw}`;
+    $("createResultText").textContent = lastResultText;
+    $("createResult").classList.remove("hidden");
+
+    $("createForm").reset();
+    await loadDojos();
+  } catch (err) {
+    console.error(err);
+    errEl.textContent = describeError(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "도장 추가";
+  }
+});
+
+$("genPwBtn").addEventListener("click", () => {
+  const chars = "abcdefghjkmnpqrstuvwxyz23456789"; // 헷갈리는 글자 제외
+  const bytes = new Uint32Array(8);
+  crypto.getRandomValues(bytes);
+  const input = $("newPw");
+  input.value = Array.from(bytes, (n) => chars[n % chars.length]).join("");
+  if (input.type === "password") input.parentElement.querySelector(".pw-toggle").click();
+});
+
+$("copyBtn").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(lastResultText);
+    $("copyBtn").textContent = "복사됨 ✓";
+    setTimeout(() => { $("copyBtn").textContent = "전달 문구 복사"; }, 1500);
+  } catch (e) {
+    alert("복사에 실패했습니다. 직접 선택해서 복사해 주세요.");
+  }
+});
+</script>
+</body>
+</html>

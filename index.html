@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>광남태권도 승품·단 심사 발표</title>
+  <title>승품·단 심사 발표</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥋</text></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,11 +12,56 @@
   <!-- 배경 축하 불꽃놀이 캔버스 -->
   <canvas id="fireworksCanvas"></canvas>
 
-  <!-- 1. 명단 입력 화면 -->
-  <div id="inputScreen" class="screen-container active">
-    <div class="input-card">
+  <!-- 0. 로그인 확인 중 -->
+  <div id="loadingScreen" class="screen-container active">
+    <div class="loading-text">불러오는 중...</div>
+  </div>
+
+  <!-- 0-1. 로그인 화면 -->
+  <div id="loginScreen" class="screen-container hidden">
+    <div class="login-card">
       <div class="title-box">
-        <h1>🥋 광남태권도 승품·단 심사 명단 작성</h1>
+        <h1>🥋 승품·단 심사 발표</h1>
+        <p>발급받은 아이디와 비밀번호로 로그인하세요.</p>
+      </div>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="login-field">
+          <label for="loginId">아이디</label>
+          <input type="text" id="loginId" name="loginId" class="table-input"
+            autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="아이디">
+        </div>
+        <div class="login-field">
+          <label for="loginPw">비밀번호</label>
+          <div class="pw-wrap">
+            <input type="password" id="loginPw" name="loginPw" class="table-input"
+              autocomplete="current-password" placeholder="비밀번호">
+          </div>
+        </div>
+
+        <label class="remember">
+          <input type="checkbox" name="rememberId"> 아이디 저장
+        </label>
+
+        <div class="login-error"></div>
+        <button type="submit" class="btn btn-gold">로그인</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 1. 명단 입력 화면 -->
+  <div id="inputScreen" class="screen-container hidden">
+    <div class="input-card">
+      <div class="input-topbar">
+        <span><span class="dojo-name"></span> 계정으로 로그인됨</span>
+        <div class="topbar-actions">
+          <a id="adminLink" class="btn-logout hidden" href="admin.html">관리자 페이지</a>
+          <button class="btn-logout" type="button" onclick="logout()">로그아웃</button>
+        </div>
+      </div>
+
+      <div class="title-box">
+        <h1>🥋 <span class="dojo-name"></span> 승품·단 심사 명단 작성</h1>
         <p>수련생 이름을 입력하세요. 이름을 작성한 수련생만 자동으로 발표 명단에 포함됩니다.</p>
       </div>
 
@@ -43,10 +89,10 @@
     </div>
   </div>
 
-  <!-- 2. 1단계 수련생 소개 오버레이 (초대형 키움) -->
+  <!-- 2. 1단계 수련생 소개 오버레이 -->
   <div id="introOverlay" class="countdown-overlay hidden">
     <div class="intro-header">다음 발표 수련생</div>
-    
+
     <div class="intro-row">
       <span class="intro-label">이름 :</span>
       <span id="introNameVal" class="intro-value white">홍길동</span>
@@ -65,9 +111,9 @@
     </div>
   </div>
 
-  <!-- 3. 2단계 메인 카운트다운 오버레이 (5, 4, 3, 2, 1 초대형) -->
+  <!-- 3. 2단계 메인 카운트다운 오버레이 -->
   <div id="countdownOverlay" class="countdown-overlay hidden">
-    <div class="gym-title">광남태권도</div>
+    <div class="gym-title dojo-name"></div>
     <div id="cdName" class="cd-name">최연우</div>
     <div id="cdRank" class="cd-rank">2품</div>
     <div class="cd-circle">
@@ -77,7 +123,7 @@
 
   <!-- 4. 결과 발표 화면 -->
   <div id="resultScreen" class="screen-container hidden">
-    <div class="gym-title">광남태권도</div>
+    <div class="gym-title dojo-name"></div>
     <div id="resultTopTitle" class="result-top-title">🎉 합격 🎉</div>
 
     <div id="resultCard" class="white-card">
@@ -91,5 +137,6 @@
   </div>
 
   <script src="script.js"></script>
+  <script type="module" src="auth.js"></script>
 </body>
 </html>

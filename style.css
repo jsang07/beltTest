@@ -377,3 +377,257 @@ body {
   pointer-events: none;
   z-index: 1;
 }
+/* ---------------- 5. 로그인 / 로딩 화면 ---------------- */
+.login-card {
+  background: #111827;
+  border: 2px solid #374151;
+  border-radius: 20px;
+  padding: 40px 32px 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.85);
+}
+
+.login-card .title-box h1 { font-size: 1.5rem; }
+
+.login-field { margin-bottom: 14px; }
+
+.login-field label {
+  display: block;
+  font-size: 0.85rem;
+  color: #fbbf24;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.login-error {
+  min-height: 1.3em;
+  margin: 4px 0 16px;
+  font-size: 0.88rem;
+  color: #f87171;
+  text-align: center;
+  word-break: break-all;
+}
+
+.login-card .btn { width: 100%; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.loading-text { font-size: 1.2rem; color: #9ca3af; }
+
+/* 입력창은 body의 user-select: none 영향을 받지 않도록 */
+input, select {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.table-input:focus, .table-select:focus { border-color: #f59e0b; }
+
+/* 비밀번호 눈 버튼 */
+.pw-wrap { position: relative; width: 100%; }
+.pw-wrap .table-input { padding-right: 46px; }
+
+.pw-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+.pw-toggle:hover { color: #fbbf24; }
+.pw-toggle .eye-off { display: none; }
+.pw-toggle.shown .eye { display: none; }
+.pw-toggle.shown .eye-off { display: block; }
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #9ca3af;
+  margin: 4px 0 6px;
+  cursor: pointer;
+}
+.remember input { accent-color: #f59e0b; width: 16px; height: 16px; cursor: pointer; }
+
+/* 명단 화면 상단: 도장 이름 / 로그아웃 */
+.input-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid #4b5563;
+  color: #9ca3af;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.btn-logout:hover { border-color: #f59e0b; color: #fbbf24; }
+
+/* ---------------- 6. 관리자 페이지 ---------------- */
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+a.btn-logout {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.admin-body {
+  overflow-y: auto;
+  align-items: flex-start;
+}
+
+.screen-container.wide {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.admin-login { margin-top: 8vh; }
+
+.deny-link {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+
+.admin-login .btn-group .btn-gold { flex: 1; }
+
+.section-title {
+  font-size: 1.05rem;
+  color: #ffffff;
+  margin: 22px 0 12px;
+}
+
+.create-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.create-form label {
+  display: block;
+  font-size: 0.8rem;
+  color: #fbbf24;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.pw-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.create-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.create-actions .btn { padding: 12px 28px; }
+
+.create-error {
+  margin: 0;
+  min-height: 0;
+  text-align: left;
+}
+
+.btn-sm {
+  background: #1f2937;
+  border: 1px solid #4b5563;
+  color: #e5e7eb;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-sm:hover { border-color: #f59e0b; color: #fbbf24; }
+.btn-sm.danger { color: #f87171; border-color: #7f1d1d; }
+.btn-sm.danger:hover { border-color: #f87171; background: rgba(239, 68, 68, 0.12); }
+
+.create-result {
+  margin-top: 16px;
+  background: #0b2a1a;
+  border: 1px solid #15803d;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.create-result-title {
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.create-result pre {
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #e5e7eb;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-bottom: 10px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.admin-list {
+  border: 1px solid #374151;
+  border-radius: 12px;
+  background-color: #090d16;
+  max-height: 420px;
+  overflow: auto;
+}
+
+.admin-list .candidate-table td { word-break: break-all; }
+
+.action-cell {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #78350f;
+  color: #fbbf24;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.list-msg {
+  padding: 18px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .create-form { grid-template-columns: 1fr; }
+}
